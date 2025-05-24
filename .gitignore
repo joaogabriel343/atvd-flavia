@@ -1,0 +1,30 @@
+# Ignorar a pasta .vs do Visual Studio
+.vs/
+
+# Outras pastas e arquivos comuns a serem ignorados em projetos C#/Visual Studio
+[Bb]in/
+[Oo]bj/
+*.suo
+*.user
+*.aps
+*.bsc
+*.fxcop
+*.pdb
+*.resharper
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.log
+*.tlog
+*.lastbuildstate
+*.opendata
+*.bak
+*.sbr
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Para projetos .NET Core / .NET 5+
+.dotnet/
