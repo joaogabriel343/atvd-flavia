@@ -238,7 +238,7 @@ namespace computaçãofc
 
             if (botaoJogadorClicado.Tag == null)
             {
-                MessageBox.Show("A posição deste botão não foi definida. Erro de configuração.", "Erro de Tag", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CustomMessageBox.Show("A posição deste botão não foi definida. Erro de configuração.", "Erro de Tag", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -253,7 +253,7 @@ namespace computaçãofc
 
             if (result.StartsWith("ERRO") || result.StartsWith("ALERTA"))
             {
-                MessageBox.Show(result, "Erro na Consulta Prolog", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CustomMessageBox.Show(result, "Erro na Consulta Prolog", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -261,7 +261,7 @@ namespace computaçãofc
 
             if (jogadoresDisponiveis.Count == 0)
             {
-                MessageBox.Show($"Não há jogadores disponíveis para a posição: {posicaoAtualSelecionada}", "Sem Jogadores", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                CustomMessageBox.Show($"Não há jogadores disponíveis para a posição: {posicaoAtualSelecionada}", "Sem Jogadores", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -302,7 +302,7 @@ namespace computaçãofc
                 string desescalarResult = ExecutePrologQuery(desescalarSalvarQuery);
                 if (desescalarResult.StartsWith("ERRO") || desescalarResult.StartsWith("ALERTA"))
                 {
-                    MessageBox.Show(desescalarResult, "Erro ao desescalar jogador anterior", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    CustomMessageBox.Show(desescalarResult, "Erro ao desescalar jogador anterior", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
             }
@@ -312,7 +312,7 @@ namespace computaçãofc
             string escalarResult = ExecutePrologQuery(escalarSalvarQuery);
             if (escalarResult.StartsWith("ERRO") || escalarResult.StartsWith("ALERTA"))
             {
-                MessageBox.Show(escalarResult, "Erro ao escalar jogador", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CustomMessageBox.Show(escalarResult, "Erro ao escalar jogador", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -320,7 +320,7 @@ namespace computaçãofc
             botaoJogadorClicado.BackColor = Color.Black;
             botaoJogadorClicado.ForeColor = Color.White;
             botaoJogadorClicado.Font = new Font("Arial", 7, FontStyle.Bold);
-            MessageBox.Show($"'{jogadorSelecionado}' escalado como {posicaoAtualSelecionada} e salvo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            CustomMessageBox.Show($"'{jogadorSelecionado}' escalado como {posicaoAtualSelecionada} e salvo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void RemoverJogador_Click(object sender, EventArgs e)
@@ -337,7 +337,7 @@ namespace computaçãofc
 
             if (desescalarResult.StartsWith("ERRO") || desescalarResult.StartsWith("ALERTA"))
             {
-                MessageBox.Show(desescalarResult, "Erro ao remover jogador", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CustomMessageBox.Show(desescalarResult, "Erro ao remover jogador", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -347,7 +347,7 @@ namespace computaçãofc
             botaoJogadorClicado.Font = new Font("Microsoft Sans Serif", 8);
             botaoJogadorClicado.Invalidate();
 
-            MessageBox.Show($"Jogador '{jogadorARemover}' removido da posição {posicaoAtualSelecionada} e salvo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            CustomMessageBox.Show($"Jogador '{jogadorARemover}' removido da posição {posicaoAtualSelecionada} e salvo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         private List<string> ParsePrologList(string prologListString)
         {
@@ -376,7 +376,7 @@ namespace computaçãofc
 
             if (result.StartsWith("ERRO") || result.StartsWith("ALERTA"))
             {
-                MessageBox.Show(result, "Erro ao carregar escalação inicial", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                CustomMessageBox.Show(result, "Erro ao carregar escalação inicial", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
