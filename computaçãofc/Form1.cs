@@ -18,6 +18,7 @@ namespace computaçãofc
     {
         private string swiplPath = @"C:\Program Files\swipl\bin\swipl.exe";
 
+
         private string posicaoAtualSelecionada = string.Empty;
         private Button botaoJogadorClicado = null;
         public Form1()
@@ -89,15 +90,15 @@ namespace computaçãofc
             AdicionarJogadorUI(espacamentoX, centroY, "gol");
 
             int defX = 2 * espacamentoX;
-            AdicionarJogadorUI(defX, centroY - offsetY, "zag");
-            AdicionarJogadorUI(defX, centroY + offsetY, "zag");
+            AdicionarJogadorUI(defX, centroY - offsetY, "zag1"); 
+            AdicionarJogadorUI(defX, centroY + offsetY, "zag2"); 
             AdicionarJogadorUI(defX, centroY - offsetY * 3, "le");
             AdicionarJogadorUI(defX, centroY + offsetY * 3, "ld");
 
             int meiX = 3 * espacamentoX + 20;
-            AdicionarJogadorUI(meiX, centroY - offsetY * 2, "vol");
+            AdicionarJogadorUI(meiX, centroY - offsetY * 2, "vol1"); 
             AdicionarJogadorUI(meiX, centroY, "mc");
-            AdicionarJogadorUI(meiX, centroY + offsetY * 2, "vol");
+            AdicionarJogadorUI(meiX, centroY + offsetY * 2, "vol2"); 
 
             int ataX = 4 * espacamentoX + 40;
             AdicionarJogadorUI(ataX, centroY - offsetY * 2, "pd");
@@ -414,24 +415,22 @@ namespace computaçãofc
                 return list;
             }
 
-            string cleanedString = System.Text.RegularExpressions.Regex.Replace(prologListString, @"^true\.\s*$", "", System.Text.RegularExpressions.RegexOptions.Multiline).Trim();
+            string[] lines = prologListString.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-            cleanedString = string.Join(Environment.NewLine, cleanedString.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                                                             .Where(line => line.Contains("posicao_escalada")));
-
-
-            string[] lines = cleanedString.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"posicao_escalada\('?([^']+)'?,\s*'([^']+)'?\)");
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"posicao_escalada\(([^,]+),\s*([^)]+)\)\.");
 
             foreach (string line in lines)
             {
-                System.Text.RegularExpressions.Match match = regex.Match(line.Trim());
-                if (match.Success && match.Groups.Count == 3)
+                string trimmedLine = line.Trim();
+                if (trimmedLine.StartsWith("posicao_escalada"))
                 {
-                    string posicao = match.Groups[1].Value.Trim('\'');
-                    string jogador = match.Groups[2].Value.Trim('\'');
-                    list.Add((posicao, jogador));
+                    System.Text.RegularExpressions.Match match = regex.Match(trimmedLine);
+                    if (match.Success && match.Groups.Count == 3)
+                    {
+                        string posicao = match.Groups[1].Value.Trim('\'');
+                        string jogador = match.Groups[2].Value.Trim('\'');
+                        list.Add((posicao, jogador));
+                    }
                 }
             }
             return list;
