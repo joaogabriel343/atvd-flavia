@@ -18,7 +18,7 @@ namespace computaçãofc
     {
         private string swiplPath = @"C:\Program Files\swipl\bin\swipl.exe";
 
-
+        private string capitaoAtual = string.Empty;
         private string posicaoAtualSelecionada = string.Empty;
         private Button botaoJogadorClicado = null;
         public Form1()
@@ -259,29 +259,116 @@ namespace computaçãofc
 
             List<string> jogadoresDisponiveis = ParsePrologList(result);
 
-            if (jogadoresDisponiveis.Count == 0)
+            List<string> jogadoresParaMenu = new List<string>();
+            string jogadorJaEscalado = botaoJogadorClicado.Text;
+            if (!string.IsNullOrEmpty(jogadorJaEscalado))
+            {
+                jogadoresParaMenu.Add(jogadorJaEscalado); 
+            }
+            jogadoresParaMenu.AddRange(jogadoresDisponiveis); 
+
+            if (jogadoresParaMenu.Count == 0)
             {
                 CustomMessageBox.Show($"Não há jogadores disponíveis para a posição: {posicaoAtualSelecionada}", "Sem Jogadores", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             ContextMenuStrip contextMenu = new ContextMenuStrip();
-            foreach (string jogadorNome in jogadoresDisponiveis)
+            foreach (string jogadorNome in jogadoresParaMenu.Distinct().OrderBy(s => s))
             {
                 ToolStripMenuItem item = new ToolStripMenuItem(jogadorNome);
-                item.Click += JogadorSelecionado_Click;
+                item.Click += JogadorSelecionado_Click; 
                 contextMenu.Items.Add(item);
             }
 
             if (!string.IsNullOrEmpty(botaoJogadorClicado.Text))
             {
+                contextMenu.Items.Add(new ToolStripSeparator());
+
+                ToolStripMenuItem definirCapitaoItem = new ToolStripMenuItem("Definir como Capitão");
+                definirCapitaoItem.Tag = botaoJogadorClicado.Text;
+                definirCapitaoItem.Click += DefinirCapitao_Click;
+                contextMenu.Items.Add(definirCapitaoItem);
+
+                ToolStripMenuItem removerCapitaoItem = new ToolStripMenuItem("Remover Capitão");
+                removerCapitaoItem.Tag = botaoJogadorClicado.Text;
+                removerCapitaoItem.Click += RemoverCapitao_Click;
+                contextMenu.Items.Add(removerCapitaoItem);
+
+                contextMenu.Items.Add(new ToolStripSeparator());
+
                 ToolStripMenuItem removerItem = new ToolStripMenuItem("Remover " + botaoJogadorClicado.Text);
                 removerItem.Click += RemoverJogador_Click;
-                contextMenu.Items.Add(new ToolStripSeparator());
                 contextMenu.Items.Add(removerItem);
             }
 
             contextMenu.Show(botaoJogadorClicado, new Point(botaoJogadorClicado.Width / 2, botaoJogadorClicado.Height / 2));
+        }
+
+        private void DefinirCapitao_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item == null) return;
+
+            string jogadorCapitao = item.Tag.ToString().ToLower(); 
+
+            string queryDefinirCapitao = $"definir_capitao('{jogadorCapitao}'), salva.";
+            string result = ExecutePrologQuery(queryDefinirCapitao);
+
+            if (result.StartsWith("ERRO") || result.StartsWith("ALERTA"))
+            {
+                CustomMessageBox.Show(result, "Erro ao definir capitão", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(capitaoAtual))
+            {
+                foreach (Control control in panel1.Controls)
+                {
+                    if (control is Button button && button.Text.Equals(capitaoAtual, StringComparison.OrdinalIgnoreCase))
+                    {
+                        button.BackColor = Color.Black;
+                        button.ForeColor = Color.White;
+                        button.Invalidate();
+                        break;
+                    }
+                }
+            }
+
+            capitaoAtual = item.Tag.ToString(); 
+            botaoJogadorClicado.BackColor = Color.Gold; 
+            botaoJogadorClicado.ForeColor = Color.Black; 
+            botaoJogadorClicado.Invalidate(); 
+
+            CustomMessageBox.Show($"'{jogadorCapitao}' definido como CAPITÃO!", "Capitão Definido", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void RemoverCapitao_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item == null) return;
+
+            string jogadorCapitao = item.Tag.ToString().ToLower(); 
+
+            string queryRemoverCapitao = "remover_capitao, salva.";
+            string result = ExecutePrologQuery(queryRemoverCapitao);
+
+            if (result.StartsWith("ERRO") || result.StartsWith("ALERTA"))
+            {
+                CustomMessageBox.Show(result, "Erro ao remover capitão", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (botaoJogadorClicado.Text.Equals(capitaoAtual, StringComparison.OrdinalIgnoreCase))
+            {
+                botaoJogadorClicado.BackColor = Color.Black;
+                botaoJogadorClicado.ForeColor = Color.White;
+                botaoJogadorClicado.Invalidate();
+            }
+
+            capitaoAtual = string.Empty; 
+
+            CustomMessageBox.Show($"Capitão removido do time!", "Capitão Removido", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void JogadorSelecionado_Click(object sender, EventArgs e)
@@ -294,6 +381,13 @@ namespace computaçãofc
             string quotedPosicao = $"'{posicaoAtualSelecionada}'";
             string quotedJogadorAtual = $"'{botaoJogadorClicado.Text.ToLower()}'";
             string quotedJogadorSelecionado = $"'{jogadorSelecionado.ToLower()}'";
+
+            if (!string.IsNullOrEmpty(botaoJogadorClicado.Text) && botaoJogadorClicado.Text.ToLower() == capitaoAtual.ToLower())
+            {
+                string removerCapitaoQuery = "remover_capitao, salva.";
+                ExecutePrologQuery(removerCapitaoQuery); 
+                capitaoAtual = string.Empty;
+            }
 
             if (!string.IsNullOrEmpty(botaoJogadorClicado.Text))
             {
@@ -317,8 +411,16 @@ namespace computaçãofc
             }
 
             botaoJogadorClicado.Text = jogadorSelecionado;
-            botaoJogadorClicado.BackColor = Color.Black;
-            botaoJogadorClicado.ForeColor = Color.White;
+            if (jogadorSelecionado.ToLower() == capitaoAtual.ToLower())
+            {
+                botaoJogadorClicado.BackColor = Color.Gold;
+                botaoJogadorClicado.ForeColor = Color.Black;
+            }
+            else
+            {
+                botaoJogadorClicado.BackColor = Color.Black;
+                botaoJogadorClicado.ForeColor = Color.White;
+            }
             botaoJogadorClicado.Font = new Font("Arial", 7, FontStyle.Bold);
             CustomMessageBox.Show($"'{jogadorSelecionado}' escalado como {posicaoAtualSelecionada} e salvo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -330,6 +432,17 @@ namespace computaçãofc
             string jogadorARemover = botaoJogadorClicado.Text.ToLower();
             string quotedJogadorARemover = $"'{jogadorARemover}'";
             string quotedPosicao = $"'{posicaoAtualSelecionada}'";
+
+            if (jogadorARemover == capitaoAtual.ToLower())
+            {
+                string removerCapitaoQuery = "remover_capitao, salva.";
+                string resultCapitao = ExecutePrologQuery(removerCapitaoQuery);
+                if (resultCapitao.StartsWith("ERRO") || resultCapitao.StartsWith("ALERTA"))
+                {
+                    CustomMessageBox.Show(resultCapitao, "Erro ao remover status de capitão", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                capitaoAtual = string.Empty;
+            }
 
             string desescalarSalvarQuery = $"desescalar({quotedPosicao}, {quotedJogadorARemover}), salva.";
 
@@ -381,6 +494,7 @@ namespace computaçãofc
             }
 
             List<(string Posicao, string Jogador)> escalacao = ParsePrologEscalacaoList(result);
+            string capitaoCarregado = GetCapitaoFromProlog(); 
 
             foreach (Control control in panel1.Controls)
             {
@@ -392,8 +506,17 @@ namespace computaçãofc
                     if (jogadorEscalado.Jogador != null && !string.IsNullOrEmpty(jogadorEscalado.Jogador))
                     {
                         button.Text = char.ToUpper(jogadorEscalado.Jogador[0]) + jogadorEscalado.Jogador.Substring(1);
-                        button.BackColor = Color.Black;
-                        button.ForeColor = Color.White;
+                        if (!string.IsNullOrEmpty(capitaoCarregado) && jogadorEscalado.Jogador.ToLower() == capitaoCarregado.ToLower())
+                        {
+                            button.BackColor = Color.Gold; 
+                            button.ForeColor = Color.Black; 
+                            capitaoAtual = button.Text; 
+                        }
+                        else
+                        {
+                            button.BackColor = Color.Black;
+                            button.ForeColor = Color.White;
+                        }
                         button.Font = new Font("Arial", 7, FontStyle.Bold);
                     }
                     else
@@ -406,6 +529,24 @@ namespace computaçãofc
                 }
             }
             panel1.Invalidate();
+        }
+
+        private string GetCapitaoFromProlog()
+        {
+            string query = "carrega, capitao_do_time(Capitao), writeq(Capitao).";
+            string result = ExecutePrologQuery(query);
+
+            if (result.StartsWith("ERRO") || result.StartsWith("ALERTA") || string.IsNullOrWhiteSpace(result))
+            {
+                return string.Empty; 
+            }
+
+            string cleanedResult = result.Trim().Replace("'", "").Replace(".", "").Replace("\n", "").Replace("\r", "");
+            if (cleanedResult.Equals("false", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Empty;
+            }
+            return cleanedResult;
         }
         private List<(string Posicao, string Jogador)> ParsePrologEscalacaoList(string prologListString)
         {
